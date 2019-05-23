@@ -1,0 +1,38 @@
+Tests:
+
+ - fifo_seqnum in tlpi-dist/pipes.  Test with and without O_RDWR.
+
+ - fifo_exec_test, fifo_fork_test, fifo_select_test in
+   programming/misc_examples.  In each case, run the program and do
+   "echo blah > /tmp/myfifo" in a separate terminal.  For
+   fifo_exec_test, can also run with an arbitrary argument; it should
+   fail.  Some or all of these can be tested with and without O_RDWR.
+   Can also run them under strace and look for exceptions.  I've found
+   many "Invalid Handle" exceptions that way.
+
+ - fifo_fcntl_test in programming/misc_examples.  Run the program and
+   do "exec 7</tmp/myfifo" in another terminal.
+
+ - make check in src/texinfo/info.  If it fails, can run individual
+   tests, e.g., t/malformed-split.sh.  Can run "sh
+   t/malformed-split.sh" under gdb or strace.
+
+ - In home directory, fifo1.sh in one terminal, fifo2.sh in a second.
+
+ - Duplex test.
+
+   $ cat ~/src/cygwin-fork/winsup/cygwin/fifo_duplex_test.sh
+   #!/bin/sh
+   set -x
+   rm -f foo
+   mkfifo foo
+   exec 7<>foo
+   echo blah >&7
+   read bar <&7
+   echo $bar
+
+For testing builds, I have scripts mybuild.sh and mybuild1.sh in
+/c/cygwin64/bin (to be run as administrator in a 32-bit shell) that
+copy the build results (cygwin1.dll and cygwin1.dbg).  The first
+copies them from src/cygwin-fork.  The second copies them from
+src/cygdll/newlib-cygwin.
