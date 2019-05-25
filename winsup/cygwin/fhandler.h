@@ -398,6 +398,10 @@ public:
   virtual int dup (fhandler_base *child, int flags);
   virtual int fpathconf (int);
 
+  /* Get a handle to the named pipe file system directory.  Used by
+     fhandler_pipe, fhandler_fifo, and fhandler_socket_unix. */
+  static NTSTATUS npfs_handle (HANDLE &);
+
   virtual HANDLE mmap (caddr_t *addr, size_t len, int prot,
 		       int flags, off_t off);
   virtual int munmap (HANDLE h, caddr_t addr, size_t len);
@@ -1019,7 +1023,6 @@ class fhandler_socket_unix : public fhandler_socket
   int send_sock_info (bool from_bind);
   int grab_admin_pkg ();
   int recv_peer_info ();
-  static NTSTATUS npfs_handle (HANDLE &nph);
   HANDLE create_pipe (bool single_instance);
   HANDLE create_pipe_instance ();
   NTSTATUS open_pipe (PUNICODE_STRING pipe_name, bool xchg_sock_info);
@@ -1154,7 +1157,6 @@ public:
   int __reg3 fadvise (off_t, off_t, int);
   int __reg3 ftruncate (off_t, bool);
   int init (HANDLE, DWORD, mode_t, int64_t);
-  static NTSTATUS npfs_handle (HANDLE &);
   static int create (fhandler_pipe *[2], unsigned, int);
   static DWORD create (LPSECURITY_ATTRIBUTES, HANDLE *, HANDLE *, DWORD,
 		       const char *, DWORD, int64_t *unique_id = NULL);
@@ -1217,7 +1219,6 @@ class fhandler_fifo: public fhandler_base
   bool reader, writer, duplexer;
   size_t max_atomic_write;
   bool __reg2 wait (HANDLE);
-  static NTSTATUS npfs_handle (HANDLE &);
   HANDLE create_pipe_instance (bool);
   NTSTATUS open_pipe (HANDLE&);
   int add_client_handler ();
