@@ -1238,19 +1238,27 @@ public:
 #define MAX_CLIENTS 64
 
 enum fifo_client_connect_state
-  {
-   fc_unknown,
-   fc_connected,
-   fc_invalid
-  };
+{
+  fc_unknown,
+  fc_connected,
+  fc_invalid
+};
+
+enum
+{
+  FILE_PIPE_INPUT_AVAILABLE_STATE = 5
+};
 
 struct fifo_client_handler
 {
   fhandler_base *fh;
   fifo_client_connect_state state;
-  HANDLE connect_evt;
-  fifo_client_handler () : fh (NULL), state (fc_unknown), connect_evt (NULL) {}
+  fifo_client_handler () : fh (NULL), state (fc_unknown) {}
   int close ();
+/* Returns FILE_PIPE_DISCONNECTED_STATE, FILE_PIPE_LISTENING_STATE,
+   FILE_PIPE_CONNECTED_STATE, FILE_PIPE_CLOSING_STATE,
+   FILE_PIPE_INPUT_AVAILABLE_STATE, or -1 on error. */
+  int pipe_state ();
 };
 
 class fhandler_fifo: public fhandler_base
@@ -1271,7 +1279,7 @@ class fhandler_fifo: public fhandler_base
   HANDLE create_pipe_instance (bool);
   NTSTATUS open_pipe (HANDLE&);
   int add_client_handler ();
-  void delete_client_handler (int);
+  int delete_client_handler (int);
   bool listen_client ();
   int stop_listen_client ();
   int check_listen_client_thread ();
