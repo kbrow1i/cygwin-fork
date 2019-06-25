@@ -5,6 +5,9 @@ What's new:
   1703 or later.  Add fake 24 bit color support for legacy console,
   which uses the nearest color from 16 system colors.
 
+- New APIs: sched_getaffinity, sched_setaffinity, pthread_getaffinity_np,
+  pthread_setaffinity_np.
+
 
 What changed:
 -------------
@@ -31,3 +34,6 @@ Bug Fixes
 - Define missing MSG_EOR.  It's unsupported by the underlying Winsock
   layer so using it in send(2), sendto(2), or sendmsg(2) will return -1
   with errno set to EOPNOTSUPP and recvmsg(2) will never return it.
+
+- Fix a race condition in the timerfd code.
+  Addresses: https://cygwin.com/ml/cygwin/2019-06/msg00096.html
