@@ -422,7 +422,7 @@ _cygtls::remove_pending_sigs ()
 extern "C" int
 sigpending (sigset_t *mask)
 {
-  sigset_t outset = (sigset_t) sig_send (myself, __SIGPENDING, &_my_tls);
+  sigset_t outset = sig_send (myself, __SIGPENDING, &_my_tls);
   if (outset == SIG_BAD_MASK)
     return -1;
   *mask = outset;
@@ -503,7 +503,7 @@ exit_thread (DWORD res)
   ExitThread (res);
 }
 
-int __reg3
+sigset_t __reg3
 sig_send (_pinfo *p, int sig, _cygtls *tls)
 {
   siginfo_t si = {};
@@ -516,7 +516,7 @@ sig_send (_pinfo *p, int sig, _cygtls *tls)
    If pinfo *p == NULL, send to the current process.
    If sending to this process, wait for notification that a signal has
    completed before returning.  */
-int __reg3
+sigset_t __reg3
 sig_send (_pinfo *p, siginfo_t& si, _cygtls *tls)
 {
   int rc = 1;
@@ -748,7 +748,7 @@ out:
   if (si.si_signo != __SIGPENDING)
     /* nothing */;
   else if (!rc)
-    rc = (int) pending;
+    rc = pending;
   else
     rc = SIG_BAD_MASK;
   sigproc_printf ("returning %p from sending signal %d", rc, si.si_signo);
@@ -1335,8 +1335,13 @@ wait_sig (VOID *)
 	    *pack.mask = 0;
 	    tl_entry = cygheap->find_tls (pack.sigtls);
 	    while ((q = q->next))
-	      if (pack.sigtls->sigmask & (bit = SIGTOMASK (q->si.si_signo)))
-		*pack.mask |= bit;
+	      {
+		/* Skip thread-specific signals for other threads. */
+		if (q->sigtls && pack.sigtls != q->sigtls)
+		  continue;
+		if (pack.sigtls->sigmask & (bit = SIGTOMASK (q->si.si_signo)))
+		  *pack.mask |= bit;
+	      }
 	    cygheap->unlock_tls (tl_entry);
 	  }
 	  break;

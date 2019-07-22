@@ -1299,7 +1299,7 @@ path_conv::serialize (HANDLE h, unsigned int &n) const
       n = 0;
       return NULL;
     }
-  memcpy (&pcf->pc, this, sizeof *this);
+  memcpy ((void *) &pcf->pc, this, sizeof *this);
   pcf->hdl = h;
   pcf->name_len = nlen;
   pcf->posix_len = plen;
@@ -1318,7 +1318,7 @@ path_conv::deserialize (void *bufp)
   char *p;
   HANDLE ret;
 
-  memcpy (this, &pcf->pc, sizeof *this);
+  memcpy ((void *) this, &pcf->pc, sizeof *this);
   wide_path = uni_path.Buffer = NULL;
   uni_path.MaximumLength = uni_path.Length = 0;
   path = posix_path = NULL;
@@ -1921,7 +1921,7 @@ symlink_worker (const char *oldpath, const char *newpath, bool isdevice)
 		      win32_newpath.get_nt_native_path (), wsym_type);
 
       if ((!isdevice && win32_newpath.exists ())
-	  || win32_newpath.is_auto_device ())
+	  || (win32_newpath.isdevice () && !win32_newpath.is_fs_special ()))
 	{
 	  set_errno (EEXIST);
 	  __leave;

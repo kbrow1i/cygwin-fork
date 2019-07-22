@@ -183,10 +183,11 @@ class path_conv
   int isfifo () const {return dev.is_device (FH_FIFO);}
   int isspecial () const {return dev.not_device (FH_FS);}
   int iscygdrive () const {return dev.is_device (FH_CYGDRIVE);}
-  int is_auto_device () const {return isdevice () && !is_fs_special ();}
-  int is_fs_device () const {return isdevice () && is_fs_special ();}
   int is_fs_special () const {return dev.is_fs_special ();}
-  int is_lnk_special () const {return is_fs_device () || isfifo () || is_lnk_symlink ();}
+
+  int is_lnk_special () const {return (isdevice () && is_fs_special ()
+				       && !issocket ())
+      || isfifo () || is_lnk_symlink ();}
 #ifdef __WITH_AF_UNIX
   int issocket () const {return dev.is_device (FH_LOCAL)
 				|| dev.is_device (FH_UNIX);}
@@ -313,7 +314,7 @@ class path_conv
   path_conv& eq_worker (const path_conv& pc, const char *in_path)
   {
     free_strings ();
-    memcpy (this, &pc, sizeof pc);
+    memcpy ((void *) this, &pc, sizeof pc);
     /* The device info might contain pointers to allocated strings, in
        contrast to statically allocated strings.  Calling device::dup()
        will duplicate the string if the source was allocated. */
