@@ -86,9 +86,6 @@ static bool get_mem_values (DWORD dwProcessId, size_t &vmsize, size_t &vmrss,
 			    size_t &vmtext, size_t &vmdata, size_t &vmlib,
 			    size_t &vmshare);
 
-/* Returns 0 if path doesn't exist, >0 if path is a directory,
-   -1 if path is a file, -2 if path is a symlink, -3 if path is a pipe,
-   -4 if path is a socket. */
 virtual_ftype_t
 fhandler_process::exists ()
 {
@@ -169,7 +166,7 @@ fhandler_process::fstat (struct stat *buf)
       buf->st_uid = p->uid;
       buf->st_gid = p->gid;
       buf->st_mode |= S_IFDIR | S_IXUSR | S_IXGRP | S_IXOTH;
-      if (file_type == 1)
+      if (file_type == virt_directory)
 	buf->st_nlink = 2;
       else
 	buf->st_nlink = 3;
@@ -389,13 +386,13 @@ format_process_fd (void *data, char *&destbuf)
       if (fd < 0 || e == fdp || (*e != '/' && *e != '\0'))
 	{
 	  set_errno (ENOENT);
-	  return 0;
+	  return -1;
 	}
       destbuf = p ? p->fd (fd, fs) : NULL;
       if (!destbuf || !*destbuf)
 	{
 	  set_errno (ENOENT);
-	  return 0;
+	  return -1;
 	}
       if (*e == '\0')
 	*((process_fd_t *) data)->fd_type = virt_fdsymlink;
